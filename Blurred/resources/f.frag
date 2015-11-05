@@ -6,7 +6,7 @@ in vec3 Normal_cameraspace;
 in vec3 EyeDirection_cameraspace;
 in vec3 LightDirection_cameraspace;
 
-out vec3 color;
+out vec4 color;
 
 uniform sampler2D currTex;
 uniform float LightPower;
@@ -27,5 +27,7 @@ void main(){
 	float cosAlpha = clamp(dot(E,R), 0, 1);
 	vec3 lightD = LightOn == 1 ? LightColor * LightPower * cosTheta        /  (distance*distance) : vec3(1, 1, 1);
 	vec3 lightS = LightOn == 1 ? LightColor * LightPower * pow(cosAlpha, 5) / (distance*distance) : vec3(0, 0, 0);
-	color = MaterialDiffuseColor * lightD + MaterialSpecularColor * lightS; 
+	//color = MaterialDiffuseColor * lightD + MaterialSpecularColor * lightS; 
+	
+	color = vec4(texture2D(currTex, UV).rgb, 1.f);
 }
