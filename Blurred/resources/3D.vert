@@ -15,12 +15,12 @@ uniform mat4 V;
 uniform mat4 M;
 uniform vec3 LightPosition_worldspace;
 
-void main(){
-
+void main()
+{
 	gl_Position = MVP * vertexPosition_modelspace;
 	Position_worldspace = (M * vertexPosition_modelspace).xyz;
 	vec3 vertexPosition_cameraspace = (V * M * vertexPosition_modelspace).xyz;
-	EyeDirection_cameraspace = (inverse(V) * vec4(0, 0, 0, 1)).xyz - vertexPosition_cameraspace;
+	EyeDirection_cameraspace = vec3(0,0,0) - vertexPosition_cameraspace;
 	vec3 LightPosition_cameraspace = (V * vec4(LightPosition_worldspace, 1)).xyz;
 	LightDirection_cameraspace = LightPosition_cameraspace + EyeDirection_cameraspace;
 	Normal_cameraspace = (V * M * vec4(vertexNormal_modelspace, 0)).xyz;

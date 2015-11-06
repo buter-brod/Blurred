@@ -28,29 +28,24 @@ int main(void)
     return -1;
   }
   
-  //glEnable(GL_BLEND);
-  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+  glDepthFunc(GL_LESS);
+
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   clock_t timeLastRedraw = 0;
-
-  //glFrontFace(GL_CW);
 
   Scene scene;
   scene.load();
 
-  //std::vector<float> obj_vs, obj_ns;
-  //std::vector<float> obj_uvs;
-
-  //bool obj_loaded = loadOBJ("ball.obj", obj_vs, obj_uvs, obj_ns);
-  //assert(obj_loaded && "unable to load object");    
-
-  //loadVertex(obj_vs.data(), obj_vs.size(), obj_uvs.data(), obj_uvs.size(), obj_ns.data(), obj_ns.size(), "object");
-  
   do 
   {
     clock_t frameStartTime = clock();
-    float delta = dt(frameStartTime, timeLastRedraw);
+    float delta = utils::dt(frameStartTime, timeLastRedraw);
     if(delta >= DELAY)
     {
       scene.frame();
@@ -63,7 +58,6 @@ int main(void)
   while(!glfwWindowShouldClose(window));
 
   scene.cleanup();
-  
 
   glfwDestroyWindow(window);
   glfwTerminate();
