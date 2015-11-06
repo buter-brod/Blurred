@@ -23,12 +23,17 @@ class Scene
   std::map<std::string, VBO>    _vboMap;
   std::map<std::string, GLuint> _textureMap;
   GLuint _program_2D;
+  GLuint _program_2D_blur;
   GLuint _program_3D;
 
+  GLuint _framebufferInd;
+  GLuint _renderedTexture;
+  GLuint _depthrenderbuffer;
 
   float _angle;
   
   void prepareTexture(const std::string& obj_name, const std::string& filename);
+  inline void prepareRTT();
 
   void loadVertex(GLvoid *vvp, size_t vvSize, 
                   GLvoid *uvp, size_t uvSize, 

@@ -6,7 +6,7 @@ in vec3 Normal_cameraspace;
 in vec3 EyeDirection_cameraspace;
 in vec3 LightDirection_cameraspace;
 
-out vec4 color;
+layout(location = 0) out vec4 color;
 
 uniform sampler2D CurrTex;
 uniform float LightPower;

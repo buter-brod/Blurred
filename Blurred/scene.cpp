@@ -135,6 +135,11 @@ void Scene::cleanup()
 
   glDeleteProgram(_program_2D);
   glDeleteProgram(_program_3D);
+  glDeleteProgram(_program_2D_blur);
+
+  glDeleteFramebuffers (1, &_framebufferInd);
+  glDeleteRenderbuffers(1, &_depthrenderbuffer);
+  glDeleteTextures     (1, &_renderedTexture);
 }
 
 void Scene::prepareTexture(const std::string& obj_name, const std::string& filename)
@@ -177,42 +182,79 @@ void Scene::load()
 
   //load 2D program
   {
-    _program_2D = 0;
     bool shaders_loaded_2D = utils::loadShaders("2D.vert", "2D.frag", _program_2D);
     assert(shaders_loaded_2D && "unable to load shaders");
   }
 
   //load 3D program  
   {
-    _program_3D = 0;
     bool shaders_loaded_3D = utils::loadShaders("3D.vert", "3D.frag", _program_3D);
-    assert(shaders_loaded_3D && "unable to load shaders");
+    assert(shaders_loaded_3D && "unable to load shaders 2D");
+  }
+
+  //load 2D program with blur
+  {
+    bool shaders_loaded_blur = utils::loadShaders("2D_blur.vert", "2D_blur.frag", _program_2D_blur);
+    assert(shaders_loaded_blur && "unable to load shaders 2D blur");
+  }
+
+  prepareRTT();
+}
+
+void Scene::prepareRTT()
+{
+  const unsigned int rtt_resolution = 512;
+
+  glGenFramebuffers(1, &_framebufferInd);
+  glBindFramebuffer(GL_FRAMEBUFFER, _framebufferInd);
+  glGenTextures(1, &_renderedTexture);
+  glBindTexture(GL_TEXTURE_2D, _renderedTexture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rtt_resolution, rtt_resolution, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+  glGenRenderbuffers(1, &_depthrenderbuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, _depthrenderbuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, rtt_resolution, rtt_resolution);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthrenderbuffer);
+
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _renderedTexture, 0);
+  GLenum drawBuffers[1] ={GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, drawBuffers);
+  auto st = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  if(st != GL_FRAMEBUFFER_COMPLETE)
+  {
+    std::cout << "glDrawBuffers error: " << st;
+    assert(false);
   }
 }
 
 void Scene::frame()
-{  
+{
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  glBindFramebuffer(GL_FRAMEBUFFER, _framebufferInd);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glm::mat4 viewM_2D, bgModelM_2D, projM_2D, mvpM_2D;
   {
-    {
-      //draw texture
+    projM_2D = glm::ortho<float>(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
+    mvpM_2D = projM_2D * viewM_2D * bgModelM_2D;
+  }  
 
-      glUseProgram(_program_2D);
-      GLuint matrix_id = glGetUniformLocation(_program_2D, "MVP");
-      glm::mat4 bgViewM, bgModelM;
-      glm::mat4 bgProjM = glm::ortho<float>(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
-      glm::mat4 MVP = bgProjM * bgViewM * bgModelM;
-      glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &MVP[0][0]);
-
-      //draw texture
-      draw(_textureMap["background"], _vboMap["background"]);
-    }
-    glClear(GL_DEPTH_BUFFER_BIT);
+  {
+    //draw background
+    glDepthMask(GL_FALSE);
+    glUseProgram(_program_2D);
+    GLuint matrix_id = glGetUniformLocation(_program_2D, "MVP");
+    glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvpM_2D[0][0]);
+    draw(_textureMap["background"], _vboMap["background"]);
+    glDepthMask(GL_TRUE);
   }
-    
+
   {
-    //draw obj to texture   
+    //draw 3D object
     
     const float offset = 5.0;
     const float light_power = 120.f;
@@ -243,6 +285,15 @@ void Scene::frame()
     glUniform1f(lightPower_id, light_power);
 
     draw(_textureMap["object"], _vboMap["object"]);
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  {
+    //draw resulting texture
+    glUseProgram(_program_2D);
+    GLuint matrix_id = glGetUniformLocation(_program_2D_blur, "MVP");
+    glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvpM_2D[0][0]);
+    draw(_renderedTexture, _vboMap["background"]);
   }
 
   _angle += 0.01f;
