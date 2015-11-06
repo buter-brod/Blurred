@@ -150,9 +150,11 @@ xcopy /y "$(ProjectDir)external\bin\*.dll" "$(OutDir)"</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="scene.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="scene.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

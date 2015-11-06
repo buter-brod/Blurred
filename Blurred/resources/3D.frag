@@ -16,7 +16,7 @@ uniform vec3 LightPosition_worldspace;
 
 void main(){
 	vec3 LightColor = vec3(1, 1, 1);
-	vec3 MaterialDiffuseColor = texture2D(currTex, UV).rgb;
+	vec4 MaterialDiffuseColor = texture2D(currTex, UV);
 	vec3 MaterialSpecularColor = vec3(0.4, 0.4, 0.4);
 	float distance = length(LightPosition_worldspace - Position_worldspace);
 	vec3 n = normalize(Normal_cameraspace);
@@ -27,7 +27,5 @@ void main(){
 	float cosAlpha = clamp(dot(E,R), 0, 1);
 	vec3 lightD = LightOn == 1 ? LightColor * LightPower * cosTheta        /  (distance*distance) : vec3(1, 1, 1);
 	vec3 lightS = LightOn == 1 ? LightColor * LightPower * pow(cosAlpha, 5) / (distance*distance) : vec3(0, 0, 0);
-	//color = MaterialDiffuseColor * lightD + MaterialSpecularColor * lightS; 
-	
-	color = vec4(texture2D(currTex, UV).rgb, 1.f);
+	color = vec4(MaterialDiffuseColor.rgb * lightD + MaterialSpecularColor * lightS, MaterialDiffuseColor.a);
 }
