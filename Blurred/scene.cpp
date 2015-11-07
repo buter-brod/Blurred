@@ -140,6 +140,7 @@ void Scene::cleanup()
   glDeleteFramebuffers (1, &_framebufferInd);
   glDeleteRenderbuffers(1, &_depthrenderbuffer);
   glDeleteTextures     (1, &_renderedTexture);
+  glDeleteTextures     (1, &_blurMaskTex);
 }
 
 void Scene::prepareTexture(const std::string& obj_name, const std::string& filename)
@@ -177,28 +178,37 @@ void Scene::load()
    loadVertex(obj_vs.data(), obj_vs.size(), obj_uvs.data(), obj_uvs.size(), (GLvoid*)0, 0, obj_ns.data(), obj_ns.size(), v_count, "object");
   }
   
-  //load background geometry
+  //load background geometry 
   loadVertex(bg_vertices, 4 * 3, bg_uvs, 4 * 2, bg_indices, 6, nullptr, 0, 6, "background");
 
-  //load 2D program
-  {
-    bool shaders_loaded_2D = utils::loadShaders("2D.vert", "2D.frag", _program_2D);
-    assert(shaders_loaded_2D && "unable to load shaders");
-  }
+  bool shaders_loaded_2D   = utils::loadShaders("2D.vert",      "2D.frag",      _program_2D);
+  bool shaders_loaded_3D   = utils::loadShaders("3D.vert",      "3D.frag",      _program_3D);
+  bool shaders_loaded_2D_b = utils::loadShaders("2D_blur.vert", "2D_blur.frag", _program_2D_blur);
 
-  //load 3D program  
-  {
-    bool shaders_loaded_3D = utils::loadShaders("3D.vert", "3D.frag", _program_3D);
-    assert(shaders_loaded_3D && "unable to load shaders 2D");
-  }
-
-  //load 2D program with blur
-  {
-    bool shaders_loaded_blur = utils::loadShaders("2D_blur.vert", "2D_blur.frag", _program_2D_blur);
-    assert(shaders_loaded_blur && "unable to load shaders 2D blur");
-  }
+  assert(shaders_loaded_2D && shaders_loaded_3D && shaders_loaded_2D_b && "failed to load shaders");
 
   prepareRTT();
+  buildBlurMask();
+}
+
+void Scene::buildBlurMask()
+{
+  const unsigned int res = 512;
+
+  glGenTextures(1, &_blurMaskTex);
+  glBindTexture(GL_TEXTURE_2D, _blurMaskTex);
+
+  unsigned char image[res * res];
+
+  for (unsigned int y = 0; y < res; y++)
+    for(unsigned int x = 0; x < res; x++)
+      image[res * y + x] = unsigned char(255 * float(x) / res);
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, res, res, 0, GL_RED, GL_UNSIGNED_BYTE, image);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  
+
+  glGenerateTextureMipmap(_blurMaskTex);
 }
 
 void Scene::prepareRTT()
@@ -241,8 +251,7 @@ void Scene::frame()
   {
     projM_2D = glm::ortho<float>(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
     mvpM_2D = projM_2D * viewM_2D * bgModelM_2D;
-  }  
-
+  }
   {
     //draw background
     glDepthMask(GL_FALSE);
@@ -289,10 +298,22 @@ void Scene::frame()
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   {
-    //draw resulting texture
-    glUseProgram(_program_2D);
+    //draw resulting texture      
+    glUseProgram(_program_2D_blur);
     GLuint matrix_id = glGetUniformLocation(_program_2D_blur, "MVP");
     glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvpM_2D[0][0]);
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, _blurMaskTex);
+
+    glActiveTexture(GL_TEXTURE0);
+
+    GLuint texture_id     = glGetUniformLocation(_program_2D_blur, "currTex");
+    GLuint textureMask_id = glGetUniformLocation(_program_2D_blur, "maskTex");
+
+    glUniform1i(texture_id,     0);
+    glUniform1i(textureMask_id, 1);    
+
     draw(_renderedTexture, _vboMap["background"]);
   }
 

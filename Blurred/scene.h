@@ -26,6 +26,8 @@ class Scene
   GLuint _program_2D_blur;
   GLuint _program_3D;
 
+  GLuint _blurMaskTex;
+
   GLuint _framebufferInd;
   GLuint _renderedTexture;
   GLuint _depthrenderbuffer;
@@ -39,6 +41,8 @@ class Scene
                   GLvoid *uvp, size_t uvSize, 
                   GLvoid *ivp, size_t ivSize, 
                   GLvoid *nvp, size_t nvSize, size_t count, const std::string& obj_name);
+
+  void buildBlurMask();
 
   void Scene::draw(GLuint tInd, VBO& vbo);
 
