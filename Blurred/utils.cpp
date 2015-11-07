@@ -7,7 +7,7 @@
 
 namespace utils
 {
-  glm::vec3 xyz(glm::vec4 v) 
+  glm::vec3 xyz(const glm::vec4& v) 
   {
     return glm::vec3(v.x, v.y, v.z); 
   }
@@ -47,7 +47,7 @@ namespace utils
     return true;
   }
 
-   unsigned int loadOBJ(const char * path,
+  size_t loadOBJ(const char * path,
                std::vector<float>& out_vertices, 
                std::vector<float>& out_uvs,
                std::vector<float>& out_normals
@@ -84,12 +84,11 @@ namespace utils
         fscanf_s(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
         temp_normals.push_back(normal);
       }else if ( strcmp( lineHeader, "f" ) == 0 ){
-        std::string vertex1, vertex2, vertex3;
         unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
         int matches = fscanf_s(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
         if (matches != 9){
           std::cerr << "can't parse file " << path;
-          return false;
+          return 0;
         }
         vertexIndices.push_back(vertexIndex[0]);
         vertexIndices.push_back(vertexIndex[1]);
@@ -108,15 +107,15 @@ namespace utils
       }
     }
 
-    for(unsigned int i = 0; i < vertexIndices.size(); i++)
+    for(size_t i = 0; i < vertexIndices.size(); i++)
     {
-      unsigned int vertexIndex = vertexIndices[i];
-      unsigned int uvIndex = uvIndices[i];
-      unsigned int normalIndex = normalIndices[i];
+      size_t vertexIndex = vertexIndices[i];
+      size_t uvIndex = uvIndices[i];
+      size_t normalIndex = normalIndices[i];
 
-      glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
-      glm::vec2 uv = temp_uvs[ uvIndex-1 ];
-      glm::vec3 normal = temp_normals[ normalIndex-1 ];
+      glm::vec3 vertex = temp_vertices[vertexIndex - 1];
+      glm::vec2 uv = temp_uvs[uvIndex - 1];
+      glm::vec3 normal = temp_normals[normalIndex - 1];
 
       out_vertices.push_back(vertex[0]);
       out_vertices.push_back(vertex[1]);
@@ -142,7 +141,7 @@ namespace utils
     VertexShaderStream.close();
     std::string FragmentShaderCode;
     std::ifstream FragmentShaderStream(fragment_file_path, std::ios::in);
-    Line = "";
+    Line.clear();
     while(getline(FragmentShaderStream, Line))
       FragmentShaderCode += "\n" + Line;
     FragmentShaderStream.close();

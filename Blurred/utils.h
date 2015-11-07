@@ -10,11 +10,11 @@ namespace utils
 {
   float dt(clock_t first, clock_t second);
 
-  glm::vec3 xyz(glm::vec4 v);
+  glm::vec3 xyz(const glm::vec4& v);
 
   bool loadTexture(const std::string& texName, GLuint &id);
 
-  unsigned int loadOBJ(const char *path,
+  size_t loadOBJ(const char *path,
     std::vector<float>& out_vertices,
     std::vector<float>& out_uvs,
     std::vector<float>& out_normals

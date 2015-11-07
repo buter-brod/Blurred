@@ -164,8 +164,8 @@ void Scene::load()
 {
   _angle = 0.f;
 
-  prepareTexture("background", "chess.tga");
-  prepareTexture("object",     "goodevil.tga");
+  prepareTexture("background", "background.png");
+  prepareTexture("object",     "object.png");
   
   {//load 3D object
 
@@ -178,7 +178,7 @@ void Scene::load()
    loadVertex(obj_vs.data(), obj_vs.size(), obj_uvs.data(), obj_uvs.size(), (GLvoid*)0, 0, obj_ns.data(), obj_ns.size(), v_count, "object");
   }
   
-  //load background geometry 
+  //load background geometry
   loadVertex(bg_vertices, 4 * 3, bg_uvs, 4 * 2, bg_indices, 6, nullptr, 0, 6, "background");
 
   bool shaders_loaded_2D   = utils::loadShaders("2D.vert",      "2D.frag",      _program_2D);
@@ -193,12 +193,11 @@ void Scene::load()
 
 void Scene::buildBlurMask()
 {
-  const unsigned int res = 512;
-
   glGenTextures(1, &_blurMaskTex);
   glBindTexture(GL_TEXTURE_2D, _blurMaskTex);
 
-  unsigned char image[res * res];
+  const size_t res = 512;
+  unsigned char *image = new unsigned char [res * res];
 
   for (unsigned int y = 0; y < res; y++)
     for(unsigned int x = 0; x < res; x++)
@@ -209,6 +208,8 @@ void Scene::buildBlurMask()
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  
 
   glGenerateTextureMipmap(_blurMaskTex);
+
+  delete[] image;
 }
 
 void Scene::prepareRTT()
@@ -261,18 +262,16 @@ void Scene::frame()
     draw(_textureMap["background"], _vboMap["background"]);
     glDepthMask(GL_TRUE);
   }
-
   {
     //draw 3D object
     
-    const float offset = 5.0;
-    const float light_power = 120.f;
+    const float offset = 3.0;
+    const float light_power = 8.f;
     
     glUseProgram(_program_3D);
 
     GLuint light_id      = glGetUniformLocation(_program_3D, "LightPosition_worldspace");
     GLuint lightPower_id = glGetUniformLocation(_program_3D, "LightPower");
-    GLuint lightOn_id    = glGetUniformLocation(_program_3D, "LightOn");
 
     glm::vec4 camPosition4(0.0, offset, offset, 0.f);
     glm::mat4 camRotM = glm::rotate(glm::mat4(), _angle, glm::vec3(0.0, 1.0, 0.0));
@@ -305,7 +304,6 @@ void Scene::frame()
 
     glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, _blurMaskTex);
-
     glActiveTexture(GL_TEXTURE0);
 
     GLuint texture_id     = glGetUniformLocation(_program_2D_blur, "currTex");
