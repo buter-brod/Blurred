@@ -147,11 +147,22 @@ int main(void)
 
   g_scene = std::make_shared<Scene>();
   
+  std::cout << "Loading scene..\n";
   g_scene->Load(rtt_size, mask_size, mask_t);
   g_scene->SetSize(Scene::Size(screen_size[0], screen_size[1]));
   g_scene->SetLightOn(true);
 
   glfwSetKeyCallback(window, key_callback);
+
+  std::cout << 
+    "Scene is ready! \n\n\
+    Feel free to change the settings: \n\n\
+    - TAB to change FPS \n\
+    - BACKSPACE to change blur mask type \n\
+    - ENTER to change RTT resolution \n\
+    - SPACE to turn lights On/Off \n\
+    - UP/DOWN ARROWS to change light power (when light is ON) \n\n\
+    ENJOY!\n\n";
 
   do 
   {
