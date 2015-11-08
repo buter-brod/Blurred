@@ -6,9 +6,10 @@ Scene::~Scene()
   cleanup();
 }
 
-void Scene::SetLightOn(bool lightOn)    {_lightOn = lightOn;  }
-void Scene::SetSize   (const Size& size){_sizes[SCENE] = size;}
-void Scene::SetAngle  (float angle)     {_angle = angle;      }
+void Scene::SetLightOn   (bool lightOn)    {_lightOn = lightOn;  }
+void Scene::SetSize      (const Size& size){_sizes[SCENE] = size;}
+void Scene::SetAngle     (float angle)     {_angle = angle;      }
+void Scene::SetLightPower(float power)     {_lightPower = power; }
 
 void Scene::loadVertex(GLvoid *vvp, size_t vvSize, GLvoid *uvp, size_t uvSize, GLvoid *ivp, size_t ivSize, GLvoid *nvp, size_t nvSize, size_t count, const std::string& obj_name)
 {

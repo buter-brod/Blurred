@@ -63,6 +63,17 @@ void cycle_mask_type()
   std::cout << "mask type now " << (mask_t == Scene::SMOOTH ? "Smooth" : (mask_t == Scene::EDGE ? "Edge" : "Peak at center")) << "\n";
 }
 
+void changeLightPower(float dPower)
+{
+  float prevPower = g_scene->GetLightPower();
+  float newPower = prevPower + dPower;
+  if (newPower >= 0.f)
+  {
+    g_scene->SetLightPower(newPower);
+    std::cout << "light power is " << newPower << "\n";
+  }  
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
   if (action == GLFW_PRESS)
@@ -80,6 +91,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
       break;
     case GLFW_KEY_TAB:
       cycle_fps();
+      break;
+    case GLFW_KEY_UP:
+      changeLightPower(1.f);
+      break;
+    case GLFW_KEY_DOWN:
+      changeLightPower(-1.f);
       break;
     default:
       break;

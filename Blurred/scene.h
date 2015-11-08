@@ -15,7 +15,7 @@ public:
 
   struct Size
   {
-    Size() {}
+    Size() :_x(0), _y(0) {}
     Size(size_t x, size_t y): _x(x), _y(y) {}
     size_t _x, _y;
   };
@@ -36,8 +36,10 @@ public:
   
   void SetLightOn(bool lightOn);
   void SetAngle(float angle);
+  void SetLightPower(float power);
 
   float GetAngle()        const {return _angle;}
+  float GetLightPower()   const {return _lightPower;}
   bool GetLightOn()       const {return _lightOn;}
   Size GetRttSize()       const {return _sizes[RTT];}
   Size GetMaskSize()      const {return _sizes[MASK];}
