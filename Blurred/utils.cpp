@@ -17,8 +17,7 @@ namespace utils
     return std::abs(float(first) - float(second)) / CLOCKS_PER_SEC;
   }
 
-
-   bool loadTexture(const std::string& texName, GLuint& id)
+  bool loadTexture(const std::string& texName, GLuint& id)
   {  
     FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType(texName.c_str(), 0), texName.c_str());
     if(!bitmap)

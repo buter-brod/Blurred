@@ -6,6 +6,8 @@
 #include <vector>
 #include <time.h>
 
+// 3rdparty code
+
 namespace utils
 {
   float dt(clock_t first, clock_t second);

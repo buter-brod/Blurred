@@ -123,6 +123,7 @@ xcopy /y "$(ProjectDir)external\bin\*.dll" "$(OutDir)"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)external\glew-1.13.0\include;$(ProjectDir)external\glfw-3.1.2\include;$(ProjectDir)external\FreeImage\include;$(ProjectDir)external\glm-0.9.7.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +132,10 @@ xcopy /y "$(ProjectDir)external\bin\*.dll" "$(OutDir)"</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>.\external\Bin\glew32.lib;.\external\Bin\glfw3dll.lib;.\external\Bin\FreeImage.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y "$(ProjectDir)resources\*.*" "$(OutDir)"
+xcopy /y "$(ProjectDir)external\bin\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

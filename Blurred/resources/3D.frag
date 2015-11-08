@@ -10,6 +10,7 @@ layout(location = 0) out vec4 color;
 
 uniform sampler2D CurrTex;
 uniform float LightPower;
+uniform float Light_On;
 uniform vec3 LightPosition_worldspace;
 
 void main(){
@@ -26,5 +27,6 @@ void main(){
 	float cosAlpha = clamp(dot(E,R), 0, 1);
 	vec3 lightD = LightColor * LightPower * cosTheta         / (distance*distance);
 	vec3 lightS = LightColor * LightPower * pow(cosAlpha, 5) / (distance*distance) / 3;
-	color = vec4(MaterialDiffuseColor * lightD + MaterialSpecularColor * lightS, tex_color.a);
+	vec4 color_l = vec4(MaterialDiffuseColor * lightD + MaterialSpecularColor * lightS, tex_color.a);
+	color = color_l * (Light_On) + tex_color * (1.0 - Light_On);
 }

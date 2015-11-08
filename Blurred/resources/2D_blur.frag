@@ -16,7 +16,11 @@ void main()
 	vec4 color_blur = vec4(0.0, 0.0, 0.0, 0.0);
 	
 	for(int i = 0; i < 7; i++)
-      color_blur += texture2D(currTex, UV + vec2((-3.0 + i) / tex_size.x, 0) ) * weights[i];
+	{
+	  vec2 uv_shifted = UV + vec2((-3.0 + i) / tex_size.x, 0);
+	  uv_shifted = clamp(uv_shifted, vec2(0.0, 0.0), vec2(1.0, 1.0));
+      color_blur += texture2D(currTex, uv_shifted) * weights[i];
+	}
 	
 	color = color_blur * blur_power + (1.0 - blur_power) * color_base;
 }
